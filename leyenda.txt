@@ -1,0 +1,12 @@
+scrcpy --no-video --audio-buffer=200
+scrcpy --video-source=camera
+scrcpy --stay-awake
+scrcpy --turn-screen-off
+scrcpy --power-off-on-close
+scrcpy --otg
+scrcpy --max-fps=15
+scrcpy --window-borderless
+scrcpy --always-on-top
+scrcpy -d // forzar conexión por cable
+adb disconnect //para eliminar conexiones adb
+adb devices  // ver dispositivos
