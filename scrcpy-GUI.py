@@ -11,7 +11,7 @@ def run_scrcpy():
             command += ' --tcpip -e'        
         else:
             adb_command += f' {tcpip_value.get()}:5555' #sino añadir ip personalizada # usar .get() para obtener el valor
-            # subprocess.run(adb_command, shell=True)
+            subprocess.run(adb_command, shell=True)
             print(adb_command)
     else:
         command += ' -d'
@@ -27,8 +27,8 @@ def run_scrcpy():
 #    if windowborderless.get():
 #        command += ' --window-borderless'
 
-   # root.destroy()
-    # subprocess.run(command, shell=True) # Con terminal
+    root.destroy()
+    subprocess.run(command, shell=True) # Con terminal
     print(command)
 
 def clear_devices():
