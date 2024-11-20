@@ -10,3 +10,4 @@ scrcpy --always-on-top
 scrcpy -d // forzar conexión por cable
 adb disconnect //para eliminar conexiones adb
 adb devices  // ver dispositivos
+adb connect 192.168.x.x:5555 //conectar a través del wifi luego scrcpy

@@ -5,14 +5,18 @@ import subprocess
 # Función que se ejecuta al presionar el botón
 def run_scrcpy():
     command = 'scrcpy'
-    if tcpip.get():
-        command += ' --tcpip -e'
+    adb_command = 'adb connect'
+    if tcpip.get(): # si casilla selecionada 
+        if tcpip_value.get() == 'auto': #si casilla selecionada y auto selecionado
+            command += ' --tcpip -e'        
+        else:
+            adb_command += f' {tcpip_value.get()}:5555' #sino añadir ip personalizada # usar .get() para obtener el valor
+            # subprocess.run(adb_command, shell=True)
+            print(adb_command)
     else:
         command += ' -d'
     if turnscreenoff.get():
         command += ' --turn-screen-off'
-    if windowborderless.get():
-        command += ' --window-borderless'
     if alwaysontop.get():
         command += ' --always-on-top'
     if stayawake.get():
@@ -20,19 +24,20 @@ def run_scrcpy():
     if maxfps.get():
         command += f' --max-fps={fps_value.get()}'
 
-    root.destroy()
-    # subprocess.run(command, creationflags=subprocess.CREATE_NO_WINDOW) # Sin terminal
-    subprocess.run(command, shell=True) # Con terminal
+#    if windowborderless.get():
+#        command += ' --window-borderless'
+
+   # root.destroy()
+    # subprocess.run(command, shell=True) # Con terminal
     print(command)
 
 def clear_devices():
-    # subprocess.run('adb disconnect', creationflags=subprocess.CREATE_NO_WINDOW) # Sin terminal
     subprocess.run('adb disconnect', shell=True) # Con terminal
 
 
 # Crear la ventana principal
 root = tk.Tk()
-root.title("Interfaz Gráfica para scrcpy")
+root.title("SCRCPY-GUI v1.1")
 root.geometry("320x340")  # ancho x alto // Establecer el tamaño de la ventana
 
 # Establecer el ícono de la ventana 
@@ -41,21 +46,28 @@ root.iconbitmap("icon.ico")
 # Crear una variable para la casilla de verificación
 tcpip = tk.BooleanVar() # --tcpip
 turnscreenoff = tk.BooleanVar() # --turn-screen-off
-windowborderless = tk.BooleanVar() # --window-border-less
+# windowborderless = tk.BooleanVar() # --window-border-less
 alwaysontop = tk.BooleanVar() # --always-on-top 
 stayawake = tk.BooleanVar() # --stay-awake no suspender el movil
 maxfps = tk.BooleanVar() # --max-fps
 
 
-# Crear y colocar la casillas de verificación
-tcpip_checkbox = tk.Checkbutton(root, text='Usar TCP/IP (Conexion inalámbrica)', variable=tcpip)
+# Crear y colocar la casillas de verificación y comboboxes para tcpip
+tcpip_checkbox = tk.Checkbutton(root, text='Conexion via TCP/IP. Puerto:', variable=tcpip)
 tcpip_checkbox.pack(pady=5)
+
+tcpip_options = ["auto", "192.168.1.x", "192.168.x.x"]
+tcpip_value = tk.StringVar(value=tcpip_options[0])
+tcpip_combobox = ttk.Combobox(root, textvariable=tcpip_value, values=tcpip_options)
+tcpip_combobox.pack(pady=5)
+
+# Crear y colocar la casillas de verificación
 
 screenoff_checkbox = tk.Checkbutton(root, text='Apagar pantalla del dispositivo', variable=turnscreenoff)
 screenoff_checkbox.pack(pady=5)
 
-windowborderless_checkbox = tk.Checkbutton(root, text='Mostrar ventana sin bordes', variable=windowborderless)
-windowborderless_checkbox.pack(pady=5)
+# windowborderless_checkbox = tk.Checkbutton(root, text='Mostrar ventana sin bordes', variable=windowborderless)
+# windowborderless_checkbox.pack(pady=5)
 
 alwaysontop_checkbox = tk.Checkbutton(root, text='Mostrar siempre la ventana', variable=alwaysontop)
 alwaysontop_checkbox.pack(pady=5)
@@ -79,7 +91,7 @@ run_button.pack(pady=5)
 clear_devices_button = tk.Button(root, text='Borrar conexiones inalámbricas', command=clear_devices)
 clear_devices_button.pack(pady=5)
 
-author_label = tk.Label(root, text="Hodei Dz", font=("Arial", 8)) 
+author_label = tk.Label(root, text="SCRCPY-GUI - Versión 1.1 - Hodei Dz", font=("Arial", 8)) 
 author_label.pack(pady=5)
 
 # Iniciar el bucle principal de la ventana
