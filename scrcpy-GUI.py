@@ -1,5 +1,6 @@
 import tkinter as tk
 from tkinter import ttk
+from tkinter import messagebox
 import subprocess
 
 # Función que se ejecuta al presionar el botón
@@ -34,10 +35,23 @@ def run_scrcpy():
 def clear_devices():
     subprocess.run('adb disconnect', shell=True) # Con terminal
 
+def check_errors(): # Ejecuta un comando en la terminal y captura la salida 
+    process = subprocess.Popen(['error:'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+    stdout, stderr = process.communicate() # Convierte la salida a string 
 
+    output = stdout.decode() + stderr.decode() # Comprueba si hay "error" en la salida 
+
+def error_message(): 
+    root = tk.Tk() 
+    root.withdraw() # Oculta la ventana principal 
+    messagebox.showerror("Error", "Se ha detectado un error en la salida de la terminal") 
+    root.destroy()
+
+if 'error' in output.lower(): 
+    error_message()
 # Crear la ventana principal
 root = tk.Tk()
-root.title("SCRCPY-GUI v1.1")
+root.title("SCRCPY-GUI v1.2")
 root.geometry("320x340")  # ancho x alto // Establecer el tamaño de la ventana
 
 # Establecer el ícono de la ventana 
