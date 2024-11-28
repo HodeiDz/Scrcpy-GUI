@@ -3,6 +3,17 @@ from tkinter import ttk
 from tkinter import messagebox
 import subprocess
 
+def check_errors(): # Ejecuta un comando en la terminal y captura la salida 
+    process = subprocess.Popen(['error:'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
+    stdout, stderr = process.communicate() # Convierte la salida a string 
+
+    output = stdout.decode() + stderr.decode() # Comprueba si hay "error" en la salida 
+
+def error_message(): 
+    root = tk.Tk() 
+    root.withdraw() # Oculta la ventana principal 
+    messagebox.showerror("Error", f"Compruebe el cable o conecte el dispositivo via TCP/IP. El Error ha sido: {output} ") 
+    root.destroy()
 # Función que se ejecuta al presionar el botón
 def run_scrcpy():
     command = 'scrcpy'
@@ -25,30 +36,18 @@ def run_scrcpy():
     if maxfps.get():
         command += f' --max-fps={fps_value.get()}'
 
-#    if windowborderless.get():
-#        command += ' --window-borderless'
-
     root.destroy()
     subprocess.run(command, shell=True) # Con terminal
     print(command)
+    if 'error' in output.lower(): #verificar si hay errores en la salida del terminal
+        error_message()
 
 def clear_devices():
     subprocess.run('adb disconnect', shell=True) # Con terminal
 
-def check_errors(): # Ejecuta un comando en la terminal y captura la salida 
-    process = subprocess.Popen(['error:'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
-    stdout, stderr = process.communicate() # Convierte la salida a string 
 
-    output = stdout.decode() + stderr.decode() # Comprueba si hay "error" en la salida 
 
-def error_message(): 
-    root = tk.Tk() 
-    root.withdraw() # Oculta la ventana principal 
-    messagebox.showerror("Error", "Se ha detectado un error en la salida de la terminal") 
-    root.destroy()
 
-if 'error' in output.lower(): 
-    error_message()
 # Crear la ventana principal
 root = tk.Tk()
 root.title("SCRCPY-GUI v1.2")
