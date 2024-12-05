@@ -15,6 +15,15 @@ def error_message():
     messagebox.showerror("Error", f"Compruebe el cable o conecte el dispositivo via TCP/IP. El Error ha sido: {output} ") 
     root.destroy()
 # Función que se ejecuta al presionar el botón
+
+def ok_message():
+    root = tk.Tk
+    messagebox.showinfo("Success!!!", "La Conexion se estableció correctamente, espere a que se inicie")
+    
+def device_disconnect_message():
+    root = tk.Tk
+    messagebox.showinfo("Success!!!", "Los dispositivos inalambricos se han eliminado correctamente")
+
 def run_scrcpy():
     command = 'scrcpy'
     adb_command = 'adb connect'
@@ -41,12 +50,12 @@ def run_scrcpy():
     print(command)
     if 'error' in output.lower(): #verificar si hay errores en la salida del terminal
         error_message()
-
+    else:
+        ok_message()
+            
 def clear_devices():
     subprocess.run('adb disconnect', shell=True) # Con terminal
-
-
-
+    device_disconnect_message()
 
 # Crear la ventana principal
 root = tk.Tk()
