@@ -13,7 +13,7 @@ def error_message():
     root = tk.Tk() 
     root.withdraw() # Oculta la ventana principal 
     messagebox.showerror("Error", f"Compruebe el cable o conecte el dispositivo via TCP/IP. El Error ha sido: {output} ") 
-    root.destroy()
+    
 # Función que se ejecuta al presionar el botón
 
 def ok_message():
@@ -22,7 +22,16 @@ def ok_message():
     
 def device_disconnect_message():
     root = tk.Tk
+    root.withdraw # ocultar ventana
     messagebox.showinfo("Success!!!", "Los dispositivos inalambricos se han eliminado correctamente")
+    root.deiconify # reaparecer ventana
+
+def ask_close():
+    respuesta = messagebox.askyesno("Cerrar?", "Debido al error desea cerrar SCRCPY-GUI?")
+    if respuesta:
+        root.destroy
+    else:
+        root.withdraw
 
 def run_scrcpy():
     command = 'scrcpy'
@@ -34,6 +43,11 @@ def run_scrcpy():
             adb_command += f' {tcpip_value.get()}:5555' #sino añadir ip personalizada # usar .get() para obtener el valor
             subprocess.run(adb_command, shell=True)
             print(adb_command)
+            if 'daemon started successfully' in output.lower:
+                ok_message()
+            else:
+                error_message()
+                ask_close()
     else:
         command += ' -d'
     if turnscreenoff.get():
@@ -45,17 +59,23 @@ def run_scrcpy():
     if maxfps.get():
         command += f' --max-fps={fps_value.get()}'
 
-    root.destroy()
+    root.withdraw
     subprocess.run(command, shell=True) # Con terminal
     print(command)
+
     if 'error' in output.lower(): #verificar si hay errores en la salida del terminal
         error_message()
+        ask_close()
     else:
         ok_message()
+        root.destroy()
             
 def clear_devices():
     subprocess.run('adb disconnect', shell=True) # Con terminal
-    device_disconnect_message()
+    if 'disconnected everything' in output:
+        device_disconnect_message()
+    else:
+        error_message()
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -68,7 +88,6 @@ root.iconbitmap("icon.ico")
 # Crear una variable para la casilla de verificación
 tcpip = tk.BooleanVar() # --tcpip
 turnscreenoff = tk.BooleanVar() # --turn-screen-off
-# windowborderless = tk.BooleanVar() # --window-border-less
 alwaysontop = tk.BooleanVar() # --always-on-top 
 stayawake = tk.BooleanVar() # --stay-awake no suspender el movil
 maxfps = tk.BooleanVar() # --max-fps
@@ -87,9 +106,6 @@ tcpip_combobox.pack(pady=5)
 
 screenoff_checkbox = tk.Checkbutton(root, text='Apagar pantalla del dispositivo', variable=turnscreenoff)
 screenoff_checkbox.pack(pady=5)
-
-# windowborderless_checkbox = tk.Checkbutton(root, text='Mostrar ventana sin bordes', variable=windowborderless)
-# windowborderless_checkbox.pack(pady=5)
 
 alwaysontop_checkbox = tk.Checkbutton(root, text='Mostrar siempre la ventana', variable=alwaysontop)
 alwaysontop_checkbox.pack(pady=5)
@@ -113,7 +129,7 @@ run_button.pack(pady=5)
 clear_devices_button = tk.Button(root, text='Borrar conexiones inalámbricas', command=clear_devices)
 clear_devices_button.pack(pady=5)
 
-author_label = tk.Label(root, text="SCRCPY-GUI - Versión 1.1 - Hodei Dz", font=("Arial", 8)) 
+author_label = tk.Label(root, text="SCRCPY-GUI - Versión 1.2 - Hodei Dz", font=("Arial", 8)) 
 author_label.pack(pady=5)
 
 # Iniciar el bucle principal de la ventana
