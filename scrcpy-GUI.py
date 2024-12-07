@@ -3,51 +3,35 @@ from tkinter import ttk
 from tkinter import messagebox
 import subprocess
 
-def check_errors(): # Ejecuta un comando en la terminal y captura la salida 
-    process = subprocess.Popen(['error:'], stdout=subprocess.PIPE, stderr=subprocess.PIPE) 
-    stdout, stderr = process.communicate() # Convierte la salida a string 
-
-    output = stdout.decode() + stderr.decode() # Comprueba si hay "error" en la salida 
-
-def error_message(): 
-    root = tk.Tk() 
-    root.withdraw() # Oculta la ventana principal 
-    messagebox.showerror("Error", f"Compruebe el cable o conecte el dispositivo via TCP/IP. El Error ha sido: {output} ") 
-    
-# Función que se ejecuta al presionar el botón
+def error_message(output): 
+    messagebox.showerror("Error", f"Compruebe el cable o conecte el dispositivo via TCP/IP. El Error ha sido: {output}")
 
 def ok_message():
-    root = tk.Tk
-    messagebox.showinfo("Success!!!", "La Conexion se estableció correctamente, espere a que se inicie")
-    
-def device_disconnect_message():
-    root = tk.Tk
-    root.withdraw # ocultar ventana
-    messagebox.showinfo("Success!!!", "Los dispositivos inalambricos se han eliminado correctamente")
-    root.deiconify # reaparecer ventana
+    messagebox.showinfo("Success!!!", "La conexión se estableció correctamente, espere a que se inicie")
 
-def ask_close():
-    respuesta = messagebox.askyesno("Cerrar?", "Debido al error desea cerrar SCRCPY-GUI?")
-    if respuesta:
-        root.destroy
-    else:
-        root.withdraw
+def device_disconnect_message():
+    messagebox.showinfo("Success!!!", "Los dispositivos inalámbricos se han eliminado correctamente")
+
 
 def run_scrcpy():
     command = 'scrcpy'
     adb_command = 'adb connect'
-    if tcpip.get(): # si casilla selecionada 
-        if tcpip_value.get() == 'auto': #si casilla selecionada y auto selecionado
+    if tcpip.get(): # si casilla selecionada
+        if tcpip_value.get() == 'auto': # si casilla seleccionada y auto seleccionado
             command += ' --tcpip -e'        
         else:
-            adb_command += f' {tcpip_value.get()}:5555' #sino añadir ip personalizada # usar .get() para obtener el valor
-            subprocess.run(adb_command, shell=True)
+            adb_command += f' {tcpip_value.get()}:5555' # Añadir IP personalizada
+            process = subprocess.run(adb_command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE)
+            output = process.stdout.decode() + process.stderr.decode()
             print(adb_command)
-            if 'daemon started successfully' in output.lower:
+            print(f"ADB Command Output: {output}")
+            if 'daemon started successfully' in output.lower():
                 ok_message()
             else:
-                error_message()
-                ask_close()
+                error_message(output)
+                root.destroy()
+                return
+                
     else:
         command += ' -d'
     if turnscreenoff.get():
@@ -59,23 +43,31 @@ def run_scrcpy():
     if maxfps.get():
         command += f' --max-fps={fps_value.get()}'
 
-    root.withdraw
-    subprocess.run(command, shell=True) # Con terminal
-    print(command)
-
-    if 'error' in output.lower(): #verificar si hay errores en la salida del terminal
-        error_message()
-        ask_close()
+    output = process.stdout.decode() + process.stderr.decode()
+    
+    if 'error' in output.lower(): # Verificar si hay errores en la salida del terminal
+        error_message(output)
+        root.destroy()
+        return
     else:
         ok_message()
         root.destroy()
-            
+
+    root.withdraw()
+
+    process = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # Con terminal
+
+    print(command)
+    print(f"SCRCPY Command Output: {output}")
+
+
 def clear_devices():
-    subprocess.run('adb disconnect', shell=True) # Con terminal
+    process = subprocess.run('adb disconnect', shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # Con terminal
+    output = process.stdout.decode() + process.stderr.decode()
     if 'disconnected everything' in output:
         device_disconnect_message()
     else:
-        error_message()
+        error_message(output)
 
 # Crear la ventana principal
 root = tk.Tk()
@@ -89,12 +81,11 @@ root.iconbitmap("icon.ico")
 tcpip = tk.BooleanVar() # --tcpip
 turnscreenoff = tk.BooleanVar() # --turn-screen-off
 alwaysontop = tk.BooleanVar() # --always-on-top 
-stayawake = tk.BooleanVar() # --stay-awake no suspender el movil
+stayawake = tk.BooleanVar() # --stay-awake no suspender el móvil
 maxfps = tk.BooleanVar() # --max-fps
 
-
-# Crear y colocar la casillas de verificación y comboboxes para tcpip
-tcpip_checkbox = tk.Checkbutton(root, text='Conexion via TCP/IP. Puerto:', variable=tcpip)
+# Crear y colocar las casillas de verificación y comboboxes para tcpip
+tcpip_checkbox = tk.Checkbutton(root, text='Conexión via TCP/IP. Puerto:', variable=tcpip)
 tcpip_checkbox.pack(pady=5)
 
 tcpip_options = ["auto", "192.168.1.x", "192.168.x.x"]
@@ -102,8 +93,7 @@ tcpip_value = tk.StringVar(value=tcpip_options[0])
 tcpip_combobox = ttk.Combobox(root, textvariable=tcpip_value, values=tcpip_options)
 tcpip_combobox.pack(pady=5)
 
-# Crear y colocar la casillas de verificación
-
+# Crear y colocar las casillas de verificación
 screenoff_checkbox = tk.Checkbutton(root, text='Apagar pantalla del dispositivo', variable=turnscreenoff)
 screenoff_checkbox.pack(pady=5)
 
