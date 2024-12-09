@@ -4,6 +4,7 @@ from tkinter import messagebox
 import subprocess
 
 def error_message(output): 
+    print(f"Printed error: {output}")
     messagebox.showerror("Error", f"Compruebe el cable o conecte el dispositivo via TCP/IP. El Error ha sido: {output}")
 
 def ok_message():
@@ -44,20 +45,33 @@ def run_scrcpy():
         command += f' --max-fps={fps_value.get()}'
 
     output = process.stdout.decode() + process.stderr.decode()
-    
-    if 'error' in output.lower(): # Verificar si hay errores en la salida del terminal
+    Output_checked = False
+
+    if 'info' in output.lower and not Output_checked():
+        ok_message()
+        Output_checked = True
+        root.destroy()
+      
+    if 'error' in output.lower() and not Output_checked(): # Verificar si hay errores en la salida del terminal
         error_message(output)
+        Output_checked = True
         root.destroy()
         return
-    else:
-        ok_message()
-        root.destroy()
+
+    
+    #if 'error' in output.lower(): # Verificar si hay errores en la salida del terminal
+    #    error_message(output)
+    #    root.destroy()
+    #    return
+    #else:
+    #    ok_message()
+    #    root.destroy()
 
     root.withdraw()
 
     process = subprocess.run(command, shell=True, stdout=subprocess.PIPE, stderr=subprocess.PIPE) # Con terminal
 
-    print(command)
+    print(f"command output: {command}")
     print(f"SCRCPY Command Output: {output}")
 
 
